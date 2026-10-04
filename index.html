@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English From Zero - Audio Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header Box */
+        .header-box {
+            background-color: #EEEBE3;
+            border: 1px solid #dcd7ce;
+            padding: 10px 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .header-box h2 {
+            margin: 0 0 5px 0;
+            font-size: 20px;
+            color: #000;
+        }
+        .header-box p {
+            margin: 0;
+            font-size: 16px;
+            color: #000;
+        }
+
+        /* Player Widget Container */
+        .player-container {
+            width: 420px;
+            background: #C7C0B3;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        /* Top part of player */
+        .player-top {
+            background-color: #EEEBE3;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .time-display {
+            font-size: 16px;
+            font-weight: 500;
+            color: #111;
+        }
+
+        .track-name-display {
+            background-color: #EEEBE3;
+            text-align: center;
+            padding: 8px 15px 10px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #332f28;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .progress-bar-container {
+            flex-grow: 1;
+            margin: 0 15px;
+            position: relative;
+            cursor: pointer;
+            height: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background-color: #b5b0a6;
+            border-radius: 3px;
+        }
+
+        .progress-bar-fill {
+            position: absolute;
+            height: 6px;
+            background-color: #332f28;
+            border-radius: 3px;
+            width: 0%;
+        }
+
+        .progress-thumb {
+            position: absolute;
+            left: 0%;
+            width: 14px;
+            height: 14px;
+            background-color: #222;
+            border-radius: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Bottom part of player */
+        .player-bottom {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .player-btn {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .player-btn:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Main Play/Pause Button */
+        .play-pause-btn {
+            background-color: #ffffff;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-size: 18px;
+        }
+
+        .play-pause-btn:hover {
+            background-color: #f2f2f2;
+        }
+
+        /* Tracks Grid Container */
+        .tracks-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .track-btn {
+            background-color: #C7C0B3;
+            border: 1px solid #9c9588;
+            padding: 8px 5px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .track-btn:hover {
+            background-color: #b8b0a2;
+        }
+
+        .track-btn.active {
+            background-color: #332f28;
+            color: #fff;
+            border-color: #111;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <div class="header-box">
+        <h2>English From Zero</h2>
+        <p>By: Khalid Qubady</p>
+    </div>
+
+    <!-- Audio Player Widget -->
+    <div class="player-container">
+        <!-- Top Section -->
+        <div class="track-name-display" id="track-name">Track 1</div>
+        <div class="player-top">
+            <span class="time-display" id="current-time">0:00</span>
+            <div class="progress-bar-container" id="progress-container">
+                <div class="progress-bar-bg"></div>
+                <div class="progress-bar-fill" id="progress-fill"></div>
+                <div class="progress-thumb" id="progress-thumb"></div>
+            </div>
+            <span class="time-display" id="duration-time">0:00</span>
+        </div>
+
+        <!-- Bottom Section -->
+        <div class="player-bottom">
+            <button class="player-btn" id="loop-btn" title="Loop">🔁</button>
+            <button class="player-btn" id="prev-btn" title="Previous Track">⏮</button>
+            <button class="play-pause-btn" id="play-pause-btn" title="Play/Pause">▶</button>
+            <button class="player-btn" id="next-btn" title="Next Track">⏭</button>
+            <button class="player-btn" id="vol-btn" title="Mute/Unmute">🔊</button>
+        </div>
+    </div>
+
+    <!-- 100 Tracks Grid Container -->
+    <div class="tracks-grid" id="tracks-grid"></div>
+
+    <!-- Hidden HTML5 Audio Element -->
+    <audio id="audio-element"></audio>
+
+    <script>
+        // List of 100 tracks (Replace the 'file' paths with your actual audio filenames/URLs e.g., 'tracks/track1.mp3')
+        const tracks = [
+            { id: 1, title: `Track 1`, file: `audio/1.mp3` },
+            { id: 2, title: `Track 2`, file: `audio/2.mp3` },
+            { id: 3, title: `Track 3`, file: `audio/3.mp3` },
+            { id: 4, title: `Track 4`, file: `audio/4.mp3` },
+            { id: 5, title: `Track 5`, file: `audio/5.mp3` },
+            { id: 6, title: `Track 6`, file: `audio/6.mp3` },
+            { id: 7, title: `Track 7`, file: `audio/7.mp3` },
+            { id: 8, title: `Track 8`, file: `audio/8.mp3` },
+            { id: 9, title: `Track 9`, file: `audio/9.mp3` },
+            { id: 10, title: `Track 10`, file: `audio/10.mp3` },
+            { id: 11, title: `Track 11`, file: `audio/11.mp3` },
+            { id: 12, title: `Track 12`, file: `audio/12.mp3` },
+            { id: 13, title: `Track 13`, file: `audio/13.mp3` },
+            { id: 14, title: `Track 14`, file: `audio/14.mp3` },
+            { id: 15, title: `Track 15`, file: `audio/15.mp3` },
+            { id: 16, title: `Track 16`, file: `audio/16.mp3` },
+            { id: 17, title: `Track 17`, file: `audio/17.mp3` },
+            { id: 18, title: `Track 18`, file: `audio/18.mp3` },
+            { id: 19, title: `Track 19`, file: `audio/19.mp3` },
+            { id: 20, title: `Track 20`, file: `audio/20.mp3` },
+            { id: 21, title: `Track 21`, file: `audio/21.mp3` },
+            { id: 22, title: `Track 22`, file: `audio/22.mp3` },
+            { id: 23, title: `Track 23`, file: `audio/23.mp3` },
+            { id: 24, title: `Track 24`, file: `audio/24.mp3` },
+            { id: 25, title: `Track 25`, file: `audio/25.mp3` },
+            { id: 26, title: `Track 26`, file: `audio/26.mp3` },
+            { id: 27, title: `Track 27`, file: `audio/27.mp3` },
+            { id: 28, title: `Track 28`, file: `audio/28.mp3` },
+            { id: 29, title: `Track 29`, file: `audio/29.mp3` },
+            { id: 30, title: `Track 30`, file: `audio/30.mp3` },
+            { id: 31, title: `Track 31`, file: `audio/31.mp3` },
+            { id: 32, title: `Track 32`, file: `audio/32.mp3` },
+            { id: 33, title: `Track 33`, file: `audio/33.mp3` },
+            { id: 34, title: `Track 34`, file: `audio/34.mp3` },
+            { id: 35, title: `Track 35`, file: `audio/35.mp3` },
+            { id: 36, title: `Track 36`, file: `audio/36.mp3` },
+            { id: 37, title: `Track 37`, file: `audio/37.mp3` },
+            { id: 38, title: `Track 38`, file: `audio/38.mp3` },
+            { id: 39, title: `Track 39`, file: `audio/39.mp3` },
+            { id: 40, title: `Track 40`, file: `audio/40.mp3` },
+            { id: 41, title: `Track 41`, file: `audio/41.mp3` },
+            { id: 42, title: `Track 42`, file: `audio/42.mp3` },
+            { id: 43, title: `Track 43`, file: `audio/43.mp3` },
+            { id: 44, title: `Track 44`, file: `audio/44.mp3` },
+            { id: 45, title: `Track 45`, file: `audio/45.mp3` },
+            { id: 46, title: `Track 46`, file: `audio/46.mp3` },
+            { id: 47, title: `Track 47`, file: `audio/47.mp3` },
+            { id: 48, title: `Track 48`, file: `audio/48.mp3` },
+            { id: 49, title: `Track 49`, file: `audio/49.mp3` },
+            { id: 50, title: `Track 50`, file: `audio/50.mp3` },
+            { id: 51, title: `Track 51`, file: `audio/51.mp3` },
+            { id: 52, title: `Track 52`, file: `audio/52.mp3` },
+            { id: 53, title: `Track 53`, file: `audio/53.mp3` },
+            { id: 54, title: `Track 54`, file: `audio/54.mp3` },
+            { id: 55, title: `Track 55`, file: `audio/55.mp3` },
+            { id: 56, title: `Track 56`, file: `audio/56.mp3` },
+            { id: 57, title: `Track 57`, file: `audio/57.mp3` },
+            { id: 58, title: `Track 58`, file: `audio/58.mp3` },
+            { id: 59, title: `Track 59`, file: `audio/59.mp3` },
+            { id: 60, title: `Track 60`, file: `audio/60.mp3` },
+            { id: 61, title: `Track 61`, file: `audio/61.mp3` },
+            { id: 62, title: `Track 62`, file: `audio/62.mp3` },
+            { id: 63, title: `Track 63`, file: `audio/63.mp3` },
+            { id: 64, title: `Track 64`, file: `audio/64.mp3` },
+            { id: 65, title: `Track 65`, file: `audio/65.mp3` },
+            { id: 66, title: `Track 66`, file: `audio/66.mp3` },
+            { id: 67, title: `Track 67`, file: `audio/67.mp3` },
+            { id: 68, title: `Track 68`, file: `audio/68.mp3` },
+            { id: 69, title: `Track 69`, file: `audio/69.mp3` },
+            { id: 70, title: `Track 70`, file: `audio/70.mp3` },
+            { id: 71, title: `Track 71`, file: `audio/71.mp3` },
+            { id: 72, title: `Track 72`, file: `audio/72.mp3` },
+            { id: 73, title: `Track 73`, file: `audio/73.mp3` },
+            { id: 74, title: `Track 74`, file: `audio/74.mp3` },
+            { id: 75, title: `Track 75`, file: `audio/75.mp3` },
+            { id: 76, title: `Track 76`, file: `audio/76.mp3` },
+            { id: 77, title: `Track 77`, file: `audio/77.mp3` },
+            { id: 78, title: `Track 78`, file: `audio/78.mp3` },
+            { id: 79, title: `Track 79`, file: `audio/79.mp3` },
+            { id: 80, title: `Track 80`, file: `audio/80.mp3` },
+            { id: 81, title: `Track 81`, file: `audio/81.mp3` },
+            { id: 82, title: `Track 82`, file: `audio/82.mp3` },
+            { id: 83, title: `Track 83`, file: `audio/83.mp3` },
+            { id: 84, title: `Track 84`, file: `audio/84.mp3` },
+            { id: 85, title: `Track 85`, file: `audio/85.mp3` },
+            { id: 86, title: `Track 86`, file: `audio/86.mp3` },
+            { id: 87, title: `Track 87`, file: `audio/87.mp3` },
+            { id: 88, title: `Track 88`, file: `audio/88.mp3` },
+            { id: 89, title: `Track 89`, file: `audio/89.mp3` },
+            { id: 90, title: `Track 90`, file: `audio/90.mp3` },
+            { id: 91, title: `Track 91`, file: `audio/91.mp3` },
+            { id: 92, title: `Track 92`, file: `audio/92.mp3` },
+            { id: 93, title: `Track 93`, file: `audio/93.mp3` },
+            { id: 94, title: `Track 94`, file: `audio/94.mp3` },
+            { id: 95, title: `Track 95`, file: `audio/95.mp3` },
+            { id: 96, title: `Track 96`, file: `audio/96.mp3` },
+            { id: 97, title: `Track 97`, file: `audio/97.mp3` },
+            { id: 98, title: `Track 98`, file: `audio/98.mp3` },
+            { id: 99, title: `Track 99`, file: `audio/99.mp3` },
+            { id: 100, title: `Track 100`, file: `audio/100.mp3` }
+        ];
+
+        let currentTrackIndex = 0;
+        const audioElement = document.getElementById('audio-element');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const loopBtn = document.getElementById('loop-btn');
+        const volBtn = document.getElementById('vol-btn');
+        const progressContainer = document.getElementById('progress-container');
+        const progressFill = document.getElementById('progress-fill');
+        const progressThumb = document.getElementById('progress-thumb');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationTimeEl = document.getElementById('duration-time');
+        const trackNameEl = document.getElementById('track-name');
+        const tracksGrid = document.getElementById('tracks-grid');
+
+        // Render 100 Track Buttons dynamically
+        function renderTracks() {
+            tracksGrid.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const btn = document.createElement('button');
+                btn.className = `track-btn ${index === currentTrackIndex ? 'active' : ''}`;
+                btn.innerText = `${track.id}. ${track.title}`; // Matches your label style
+                btn.onclick = () => loadAndPlayTrack(index);
+                tracksGrid.appendChild(btn);
+            });
+        }
+
+        function loadAndPlayTrack(index) {
+            currentTrackIndex = index;
+            audioElement.src = tracks[index].file;
+            trackNameEl.innerText = tracks[index].title;
+            audioElement.play().catch(e => {
+                console.log("Playback error or missing file:", e);
+            });
+            updateActiveButton();
+            playPauseBtn.innerText = '⏸';
+        }
+
+        function updateActiveButton() {
+            const buttons = tracksGrid.querySelectorAll('.track-btn');
+            buttons.forEach((btn, idx) => {
+                if (idx === currentTrackIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Play / Pause Toggle
+        playPauseBtn.onclick = () => {
+            if (!audioElement.src) {
+                loadAndPlayTrack(0);
+                return;
+            }
+            if (audioElement.paused) {
+                audioElement.play();
+                playPauseBtn.innerText = '⏸';
+            } else {
+                audioElement.pause();
+                playPauseBtn.innerText = '▶';
+            }
+        };
+
+        // Next & Previous controls
+        nextBtn.onclick = () => {
+            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+            loadAndPlayTrack(currentTrackIndex);
+        };
+
+        prevBtn.onclick = () => {
+            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+            loadAndPlayTrack(currentTrackIndex);
+        };
+
+        // Loop control
+        let isLooping = false;
+        loopBtn.onclick = () => {
+            isLooping = !isLooping;
+            audioElement.loop = isLooping;
+            loopBtn.style.backgroundColor = isLooping ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.3)';
+        };
+
+        // Mute control
+        let isMuted = false;
+        volBtn.onclick = () => {
+            isMuted = !isMuted;
+            audioElement.muted = isMuted;
+            volBtn.innerText = isMuted ? '🔇' : '🔊';
+        };
+
+        // Update progress bar & timers
+        audioElement.ontimeupdate = () => {
+            if (audioElement.duration) {
+                const progressPercent = (audioElement.currentTime / audioElement.duration) * 100;
+                progressFill.style.width = `${progressPercent}%`;
+                progressThumb.style.left = `${progressPercent}%`;
+                
+                currentTimeEl.innerText = formatTime(audioElement.currentTime);
+                durationTimeEl.innerText = formatTime(audioElement.duration);
+            }
+        };
+
+        // Click on progress bar to seek
+        progressContainer.onclick = (e) => {
+            if (!audioElement.duration) return;
+            const rect = progressContainer.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            audioElement.currentTime = (clickX / width) * audioElement.duration;
+        };
+
+        // Auto play next track when ended
+        audioElement.onended = () => {
+            if (!audioElement.loop) {
+                nextBtn.click();
+            }
+        };
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Initialize grid on load
+        renderTracks();
+        trackNameEl.innerText = tracks[currentTrackIndex].title;
+    </script>
+</body>
+</html>
